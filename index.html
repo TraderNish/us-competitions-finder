@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US Academic Competitions Finder</title>
+<style>
+  :root { --bd:#dcdfe4; --muted:#667085; --ink:#1f2933; --accent:#2563eb; }
+  * { box-sizing: border-box; }
+  body { font: 14px/1.5 -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+         margin: 0; color: var(--ink); background: #f6f7f9; }
+  header { background: #14233b; color: #fff; padding: 16px 20px; }
+  header h1 { margin: 0; font-size: 19px; }
+  header .sub { color: #aeb9c9; font-size: 12.5px; margin-top: 4px; }
+  .banner { background: #fff8e1; border-bottom: 1px solid #f0e3b0; color: #6b5e1f;
+            font-size: 12.5px; padding: 7px 20px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+              padding: 14px 20px; background: #fff; border-bottom: 1px solid var(--bd);
+              position: sticky; top: 0; z-index: 5; }
+  .ctrl { display: flex; flex-direction: column; gap: 3px; }
+  .ctrl label { font-size: 11px; color: var(--muted); text-transform: uppercase;
+                letter-spacing: .03em; }
+  .ctrl select, .ctrl input { padding: 6px 8px; border: 1px solid var(--bd);
+                border-radius: 6px; font-size: 13px; background: #fff; }
+  .ctrl input[type=text] { min-width: 190px; }
+  .chk { flex-direction: row; align-items: center; gap: 6px; padding-bottom: 6px; }
+  .count { margin-left: auto; font-size: 13px; align-self: center; }
+  .count b { font-size: 17px; }
+  .grid { display: grid; gap: 14px; padding: 18px 20px;
+          grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  .card { background: #fff; border: 1px solid var(--bd); border-radius: 10px;
+          padding: 14px 15px; display: flex; flex-direction: column; gap: 9px; }
+  .card h2 { margin: 0; font-size: 15.5px; line-height: 1.3; }
+  .badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: #eef2f7;
+           color: #3a4a5e; text-transform: capitalize; }
+  .badge.subj { background: #e7f0ff; color: #1d4ed8; }
+  .badge.fmt { background: #e8f7ee; color: #166534; }
+  .badge.lvl { background: #f3ecfb; color: #6b21a8; }
+  .row { font-size: 12.8px; color: #344054; }
+  .row .k { color: var(--muted); }
+  .nj { background: #f0f9f2; border: 1px solid #cdedd6; border-radius: 7px;
+        padding: 6px 9px; font-size: 12.5px; }
+  .nj.no { background: #fbf1f1; border-color: #f0d2d2; }
+  .foot { display: flex; align-items: center; justify-content: space-between;
+          gap: 8px; margin-top: auto; padding-top: 4px; }
+  .verified { font-size: 11px; }
+  .verified .ok { color: #166534; }
+  .verified .stale { color: #b45309; }
+  .verified .none { color: #b42318; }
+  a.reg { background: var(--accent); color: #fff; text-decoration: none;
+          padding: 7px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600;
+          white-space: nowrap; }
+  a.reg:hover { background: #1d4ed8; }
+  .deadline { font-weight: 600; }
+  .deadline.soon { color: #b42318; }
+  .deadline.tbd { color: var(--muted); font-weight: 500; }
+  .empty { padding: 40px 20px; text-align: center; color: var(--muted); }
+  footer { padding: 16px 20px; color: var(--muted); font-size: 12px;
+           border-top: 1px solid var(--bd); }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>US Academic Competitions Finder</h1>
+  <div class="sub" id="subtitle">loading…</div>
+</header>
+<div class="banner" id="banner"></div>
+
+<div class="controls">
+  <div class="ctrl">
+    <label>Search</label>
+    <input type="text" id="q" placeholder="name, subject, keyword…">
+  </div>
+  <div class="ctrl">
+    <label>Subject</label>
+    <select id="subject"><option value="">All subjects</option></select>
+  </div>
+  <div class="ctrl">
+    <label>Grade</label>
+    <select id="grade"><option value="">Any grade</option></select>
+  </div>
+  <div class="ctrl">
+    <label>Format</label>
+    <select id="format"><option value="">Any format</option></select>
+  </div>
+  <div class="ctrl">
+    <label>Cost</label>
+    <select id="cost">
+      <option value="">Any cost</option>
+      <option value="free">Free</option>
+      <option value="paid">Has a fee / varies</option>
+    </select>
+  </div>
+  <div class="ctrl">
+    <label>Deadline within</label>
+    <select id="deadline">
+      <option value="">Any time</option>
+      <option value="14">14 days</option>
+      <option value="30">30 days</option>
+      <option value="60">60 days</option>
+      <option value="90">90 days</option>
+    </select>
+  </div>
+  <div class="ctrl chk">
+    <input type="checkbox" id="onlineonly"><label for="onlineonly" style="text-transform:none;font-size:12.5px;color:var(--ink)">Online option only</label>
+  </div>
+  <div class="count">Showing <b id="rowcount">0</b></div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" style="display:none">No competitions match these filters.</div>
+
+<footer>
+  Data is a curated seed; volatile fields (deadlines) are refreshed separately.
+  Spot something wrong or expired?
+  <a id="report" href="#">Report a listing →</a>
+  · Sources are each competition's official site.
+</footer>
+
+<script src="competitions.js"></script>
+<script>
+const REPORT_EMAIL = "appunish4u@gmail.com";
+let DATA = null;
+
+const fmtDate = s => s ? new Date(s + "T00:00:00").toLocaleDateString("en-US",
+  {year:"numeric", month:"short", day:"numeric"}) : null;
+const daysUntil = s => s ? Math.round(
+  (new Date(s+"T00:00:00") - new Date(new Date().toDateString())) / 86400000) : null;
+
+function gradeSpan(g){
+  // collapse a sorted grade list into ranges, e.g. [1,2,3,6,7] -> "1–3, 6–7"
+  const a = [...g].sort((x,y)=>x-y); const out = []; let i = 0;
+  while (i < a.length){ let j = i; while (j+1 < a.length && a[j+1] === a[j]+1) j++;
+    out.push(i === j ? `${a[i]}` : `${a[i]}–${a[j]}`); i = j+1; }
+  return out.join(", ");
+}
+
+function costClass(cost){
+  const c = (cost || "").toLowerCase();
+  return c.includes("free") && !c.includes("fee") ? "free" : "paid";
+}
+
+function hasOnline(r){
+  return !!(r.access && r.access.online_option);
+}
+
+function init(data){
+  DATA = data;
+  const f = data.facets;
+  f.subjects.forEach(s => subject.add(new Option(s[0].toUpperCase()+s.slice(1), s)));
+  f.grades.forEach(g => grade.add(new Option("Grade " + g, g)));
+  f.formats.forEach(x => format.add(new Option(x, x)));
+
+  const refreshed = data.data_refreshed_at;
+  const stamp = refreshed
+    ? `Deadlines last refreshed ${fmtDate(refreshed)}.`
+    : `Deadlines not yet refreshed — run refresh.py to populate "next deadline" fields. `
+      + `Stable facts verified up to ${fmtDate(data.generated_at) || "—"}.`;
+  document.getElementById("banner").textContent = stamp;
+  document.getElementById("subtitle").textContent =
+    `${data.count_active} active competitions · subjects: ${f.subjects.join(", ")} · grades ${Math.min(...f.grades)}–${Math.max(...f.grades)}`;
+
+  document.getElementById("report").href =
+    `mailto:${REPORT_EMAIL}?subject=${encodeURIComponent("US Competitions Finder — listing report")}`
+    + `&body=${encodeURIComponent("Competition id/name:\nWhat's wrong (expired, dead link, wrong dates):\n")}`;
+
+  ["q","subject","grade","format","cost","deadline","onlineonly"].forEach(id =>
+    document.getElementById(id).addEventListener("input", render));
+  render();
+}
+
+function passes(r){
+  if (!r.active) return false;  // never show discontinued competitions
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  if (q){
+    const hay = [r.name, r.subjects.join(" "), r.source_notes, r.typical_window]
+      .join(" ").toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  if (subject.value && !r.subjects.includes(subject.value)) return false;
+  if (grade.value && !r.grades.includes(+grade.value)) return false;
+  if (format.value && r.format !== format.value) return false;
+  if (cost.value && costClass(r.cost) !== cost.value) return false;
+  if (document.getElementById("onlineonly").checked && !hasOnline(r)) return false;
+  if (deadline.value){
+    const d = daysUntil(r.next_deadline);
+    if (d === null || d < 0 || d > +deadline.value) return false;
+  }
+  return true;
+}
+
+function verifiedBadge(r){
+  if (!r.last_verified)
+    return `<span class="none">● unverified — confirm before relying</span>`;
+  const age = daysUntil(r.last_verified);  // negative = in the past
+  const days = age === null ? null : -age;
+  const cls = days !== null && days > 270 ? "stale" : "ok";
+  return `<span class="${cls}">● verified ${fmtDate(r.last_verified)}</span>`;
+}
+
+function deadlineHtml(r){
+  if (!r.next_deadline)
+    return `<span class="deadline tbd">Deadline: TBD (see typical window)</span>`;
+  const d = daysUntil(r.next_deadline);
+  const soon = d !== null && d >= 0 && d <= 30 ? " soon" : "";
+  const rel = d < 0 ? " (passed)" : d === 0 ? " (today)" : ` (in ${d} days)`;
+  return `<span class="deadline${soon}">Deadline: ${fmtDate(r.next_deadline)}${rel}</span>`;
+}
+
+function card(r){
+  const n = r.access || {};
+  const parts = [];
+  if (n.has_local_chapter) parts.push("local/school pathway");
+  if (n.online_option) parts.push("online option");
+  const accessText = `<b>Access:</b> ${parts.length ? parts.join(" · ") : "via school/registration"}`
+    + `${n.notes ? ` — ${n.notes}` : ""}`;
+  const regUrl = r.registration_url || r.official_url;
+  return `<div class="card">
+    <h2>${r.name}</h2>
+    <div class="badges">
+      ${r.subjects.map(s=>`<span class="badge subj">${s}</span>`).join("")}
+      <span class="badge fmt">${r.format}</span>
+      <span class="badge lvl">${r.level}</span>
+      <span class="badge">${r.team_or_individual}</span>
+    </div>
+    <div class="row"><span class="k">Grades:</span> ${gradeSpan(r.grades)}</div>
+    <div class="row"><span class="k">Cost:</span> ${r.cost || "—"}</div>
+    <div class="row"><span class="k">When:</span> ${r.typical_window || "—"}</div>
+    <div class="nj ${hasOnline(r)?"":"no"}">${accessText}</div>
+    <div class="row">${deadlineHtml(r)}</div>
+    <div class="foot">
+      <span class="verified">${verifiedBadge(r)}</span>
+      <a class="reg" href="${regUrl}" target="_blank" rel="noopener">Register / Info ↗</a>
+    </div>
+  </div>`;
+}
+
+function render(){
+  const rows = DATA.competitions.filter(passes).sort((a,b)=>{
+    const da = a.next_deadline, db = b.next_deadline;       // by soonest deadline
+    if (da && db) return da < db ? -1 : da > db ? 1 : 0;    // nulls (TBD) sort last
+    if (da) return -1;
+    if (db) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  document.getElementById("grid").innerHTML = rows.map(card).join("");
+  document.getElementById("rowcount").textContent = rows.length;
+  document.getElementById("empty").style.display = rows.length ? "none" : "block";
+}
+
+// Prefer fetch (always freshest when hosted); fall back to the embedded
+// competitions.js so the page also works opened directly from disk (file://).
+fetch("competitions.json")
+  .then(r => { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+  .then(init)
+  .catch(() => {
+    if (window.__DATA__) return init(window.__DATA__);
+    document.getElementById("subtitle").textContent =
+      "Failed to load data — run build.py first.";
+  });
+</script>
+</body>
+</html>
