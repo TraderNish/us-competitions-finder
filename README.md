@@ -1,5 +1,7 @@
 # US Academic Competitions Finder
 
+**🔗 Live site: https://tradernish.github.io/us-competitions-finder/**
+
 A simple, fast, static web app that lets a US parent or student filter
 academic competitions (math, science, history, geography, spelling, writing,
 debate, language, CS) by **subject, grade, format, cost, and upcoming deadline**,
